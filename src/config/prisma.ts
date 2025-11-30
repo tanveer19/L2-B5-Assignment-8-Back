@@ -1,14 +1,5 @@
-import { PrismaClient } from "../generated/prisma";
-import { Pool } from "@prisma/adapter-pg";
+import { PrismaClient } from "@prisma/client";
 
-// Create connection pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
-
-// Initialize Prisma Client with adapter
-const prisma = new PrismaClient({
-  adapter: pool,
-});
+const prisma = new PrismaClient();
 
 export default prisma;
