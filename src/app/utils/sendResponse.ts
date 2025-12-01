@@ -1,19 +1,25 @@
 import { Response } from "express";
 
-type TResponse<T> = {
-  success: boolean;
+interface IResponse<T> {
   statusCode: number;
-  message: string;
+  success: boolean;
+  message?: string;
   data?: T;
-  token?: string;
-};
+  meta?: {
+    page: number;
+    limit: number;
+    total: number;
+  };
+}
 
-export const sendResponse = <T>(res: Response, data: TResponse<T>) => {
-  res.status(data.statusCode).json({
-    success: data.success,
-    statusCode: data.statusCode,
-    message: data.message,
-    data: data.data,
-    token: data.token,
-  });
+export const sendResponse = <T>(res: Response, payload: IResponse<T>) => {
+  const responsePayload: IResponse<T> = {
+    statusCode: payload.statusCode,
+    success: payload.success,
+    message: payload.message,
+    data: payload.data,
+    meta: payload.meta,
+  };
+
+  return res.status(payload.statusCode).json(responsePayload);
 };

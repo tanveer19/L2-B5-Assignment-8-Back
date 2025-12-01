@@ -1,32 +1,26 @@
-import express, { Application, Request, Response } from "express";
 import cors from "cors";
-import helmet from "helmet";
-import morgan from "morgan";
-import cookieParser from "cookie-parser";
-const app: Application = express();
-// Health check
+import routes from "./app/routes";
+import { globalErrorHandler } from "./app/middlewares/globalErrorHandler";
+import { notFound } from "./app/middlewares/notFound";
+import express, { Request, Response } from "express";
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+// Register root route FIRST
 app.get("/", (req: Request, res: Response) => {
-  res.json({
-    message: "Travel Buddy API is running!",
-    version: "1.0.0",
-    status: "healthy",
-  });
-});
-// 404 handler
-app.use((req: Request, res: Response) => {
-  res.status(404).json({
-    success: false,
-    message: "Route not found",
+  res.status(200).json({
+    message: "A8",
   });
 });
 
-// Global error handler
-app.use((err: any, req: Request, res: Response, next: any) => {
-  console.error(err.stack);
-  res.status(err.status || 500).json({
-    success: false,
-    message: err.message || "Internal server error",
-  });
-});
+// Register API routes
+app.use("/api", routes);
+
+// Error handlers AFTER routes
+app.use(globalErrorHandler);
+app.use(notFound);
 
 export default app;

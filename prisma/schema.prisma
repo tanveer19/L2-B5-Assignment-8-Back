@@ -1,126 +1,23 @@
-generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
-}
-
-// Note: No datasource block needed in Prisma 7!
-// Connection is handled in prisma.config.ts and PrismaClient constructor
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-enum UserRole {
-  user
-  admin
-}
-
-enum TravelType {
-  solo
-  family
-  friends
-  couple
-}
-
-enum SubscriptionStatus {
-  active
-  inactive
-  expired
+generator client {
+  provider = "prisma-client-js"
 }
 
 model User {
-  id       String   @id @default(uuid())
-  email    String   @unique
-  password String
-  fullName String
-  role     UserRole @default(user)
-
-  // Profile fields
-  bio              String?
-  profileImage     String?
-  travelInterests  String[] // Array of interests
-  visitedCountries String[] // Array of country names
-  currentLocation  String?
-
-  // Subscription
-  subscriptionStatus SubscriptionStatus @default(inactive)
-  subscriptionExpiry DateTime?
-  isVerified         Boolean            @default(false)
-
+  id        String   @id @default(uuid())
+  fullName  String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  // Relations
-  travelPlans     TravelPlan[]
-  reviewsGiven    Review[]       @relation("ReviewAuthor")
-  reviewsReceived Review[]       @relation("ReviewTarget")
-  subscriptions   Subscription[]
-
-  @@index([email])
 }
 
-model TravelPlan {
-  id     String @id @default(uuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  destination String
-  startDate   DateTime
-  endDate     DateTime
-  budget      Float?
-  travelType  TravelType
-  description String?
-
-  visibility Boolean @default(true) // Public/Private
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  reviews Review[]
-
-  @@index([userId])
-  @@index([destination])
-  @@index([startDate, endDate])
-}
-
-model Review {
-  id      String  @id @default(uuid())
-  rating  Int // 1-5 stars
-  comment String?
-
-  authorId String
-  author   User   @relation("ReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-
-  targetUserId String
-  targetUser   User   @relation("ReviewTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
-
-  travelPlanId String?
-  travelPlan   TravelPlan? @relation(fields: [travelPlanId], references: [id], onDelete: SetNull)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([authorId])
-  @@index([targetUserId])
-}
-
-model Subscription {
-  id     String @id @default(uuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  plan       String // "monthly" or "yearly"
-  status     SubscriptionStatus
-  startDate  DateTime
-  expiryDate DateTime
-
-  amount    Float
-  paymentId String? // Transaction ID from payment gateway
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
+enum Role {
+  USER
+  ADMIN
 }

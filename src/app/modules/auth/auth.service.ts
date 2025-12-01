@@ -1,19 +1,47 @@
-import { z } from "zod";
+import bcrypt from "bcryptjs";
+import httpStatus from "http-status";
+import prisma from "../../config/prisma";
+import { generateToken } from "../../utils/jwt";
+import AppError from "../../errorHelpers/AppError";
 
-export const registerSchema = z.object({
-  fullName: z
-    .string()
-    .min(3, "Full name must be at least 3 characters")
-    .max(100, "Full name must not exceed 100 characters")
-    .trim(),
-  email: z.string().email("Invalid email address").toLowerCase().trim(),
-  password: z
-    .string()
-    .min(6, "Password must be at least 6 characters")
-    .max(100, "Password must not exceed 100 characters"),
-});
+const registerUser = async (payload: {
+  fullName: string;
+  email: string;
+  password: string;
+}) => {
+  const { fullName, email, password } = payload;
 
-export const loginSchema = z.object({
-  email: z.string().email("Invalid email address").toLowerCase().trim(),
-  password: z.string().min(1, "Password is required"),
-});
+  const isExist = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (isExist) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Email already exists");
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const user = await prisma.user.create({
+    data: {
+      fullName,
+      email,
+      password: hashedPassword,
+    },
+  });
+
+  const token = generateToken({ id: user.id, role: user.role });
+
+  return {
+    user: {
+      id: user.id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+    },
+    token,
+  };
+};
+
+export const AuthService = {
+  registerUser,
+};
