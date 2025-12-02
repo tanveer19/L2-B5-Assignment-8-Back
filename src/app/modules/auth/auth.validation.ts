@@ -7,3 +7,9 @@ export const registerValidation = z.object({
     password: z.string().min(6, "Password must be 6+ chars"),
   }),
 });
+export const loginValidation = z.object({
+  body: z.object({
+    email: z.email("Invalid email"),
+    password: z.string().min(6, "Password must be 6+ chars"),
+  }),
+});
