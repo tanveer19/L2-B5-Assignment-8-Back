@@ -3,51 +3,90 @@ import AppError from "../../errorHelpers/AppError";
 import prisma from "../../config/prisma";
 import { createUserTokens } from "../../utils/userTokens";
 
+type Role = "USER" | "ADMIN";
+
+interface RegisterPayload {
+  fullName: string;
+  email: string;
+  password: string;
+  role?: Role; // optional, defaults to USER
+}
+
+interface LoginPayload {
+  email: string;
+  password: string;
+}
+
 export const AuthService = {
-  registerUser: async (payload: any) => {
-    const { fullName, email, password } = payload;
+  // -------------------------------
+  // REGISTER USER
+  // -------------------------------
+  registerUser: async (payload: RegisterPayload) => {
+    const { fullName, email, password, role } = payload;
 
-    const isExist = await prisma.user.findUnique({
-      where: { email },
-    });
-
+    // Check if email already exists
+    const isExist = await prisma.user.findUnique({ where: { email } });
     if (isExist) {
       throw new AppError(400, "User already exists");
     }
 
+    // Hash password
     const hashed = await bcrypt.hash(password, 10);
 
+    // Ensure role is uppercase and valid
+    const roleEnum: Role = role ? role.toUpperCase() as Role : "USER";
+
+    // Create user
     const user = await prisma.user.create({
-      data: { fullName, email, password: hashed },
+      data: {
+        fullName,
+        email,
+        password: hashed,
+        role: roleEnum,
+      },
     });
 
-    return user;
+    return {
+      id: user.id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+    };
   },
 
-  loginUser: async (payload: any) => {
+  // -------------------------------
+  // LOGIN USER
+  // -------------------------------
+  loginUser: async (payload: LoginPayload) => {
     const { email, password } = payload;
 
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
-
+    // Find user by email
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       throw new AppError(404, "User not found");
     }
 
+    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       throw new AppError(400, "Invalid credentials");
     }
 
+    // Generate JWT with role
     const accessToken = createUserTokens({
       id: user.id,
       email: user.email,
+      role: user.role,
     });
 
     return {
       accessToken,
-      user,
+      user: {
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+      },
     };
   },
 };
