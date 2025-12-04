@@ -30,3 +30,18 @@ export const loginUser = catchAsync(async (req: Request, res: Response) => {
     data: result.user,
   });
 });
+
+export const logoutUser = catchAsync(async (req: Request, res: Response) => {
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: false, // keep true in production with HTTPS
+    sameSite: "lax",
+  });
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Logged out successfully",
+    data: null,
+  });
+});
