@@ -1,52 +1,74 @@
-import bcrypt from "bcryptjs";
 import prisma from "../../config/prisma";
-import { AppError } from "../../errorHelpers/AppError";
-import { createToken } from "../../utils/jwt";
-import env from "../../config/env";
-import { IRegisterUser, IUserResponse } from "./user.interface";
+import AppError from "../../errorHelpers/AppError";
+import httpStatus from "http-status";
 
-const registerUser = async (payload: IRegisterUser) => {
-  // Check if user already exists
-  const existingUser = await prisma.user.findUnique({
-    where: { email: payload.email },
+const getSingleUser = async (id: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id },
   });
 
-  if (existingUser) {
-    throw new AppError(400, "Email already registered");
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, "User not found");
   }
 
-  // Hash password
-  const hashedPassword = await bcrypt.hash(
-    payload.password,
-    env.BCRYPT_SALT_ROUNDS
-  );
+  return user;
+};
 
-  // Create user with "user" role (forced for security)
-  const newUser = await prisma.user.create({
-    data: {
-      fullName: payload.fullName,
-      email: payload.email,
-      password: hashedPassword,
-      role: "user", // Always create as regular user
-    },
-    select: {
-      id: true,
-      email: true,
-      fullName: true,
-      role: true,
-      createdAt: true,
-    },
+const updateUserProfile = async (id: string, payload: any) => {
+  const exists = await prisma.user.findUnique({
+    where: { id },
   });
 
-  // Generate JWT token
-  const token = createToken({
-    userId: newUser.id,
-    role: newUser.role,
+  if (!exists) {
+    throw new AppError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  // 🚀 Remove all undefined fields
+  Object.keys(payload).forEach((key) => {
+    if (payload[key] === undefined || payload[key] === null) {
+      delete payload[key];
+    }
   });
 
-  return { user: newUser, token };
+  // 🚀 Handle array updates safely — only create set if provided
+  if (Array.isArray(payload.interests)) {
+    payload.interests = { set: payload.interests };
+  }
+
+  if (Array.isArray(payload.visitedCountries)) {
+    payload.visitedCountries = { set: payload.visitedCountries };
+  }
+
+  // 🚀 If no image uploaded, do not overwrite existing one
+  if (!payload.profileImage) {
+    delete payload.profileImage;
+  }
+
+  return prisma.user.update({
+    where: { id },
+    data: payload,
+  });
+};
+
+const getAllUsers = async () => {
+  return prisma.user.findMany();
+};
+
+const deleteUser = async (id: string) => {
+  const exists = await prisma.user.findUnique({ where: { id } });
+
+  if (!exists) {
+    throw new AppError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  await prisma.user.delete({
+    where: { id },
+  });
 };
 
 export const userService = {
-  registerUser,
+  getSingleUser,
+  updateUserProfile,
+  getAllUsers,
+  deleteUser,
 };

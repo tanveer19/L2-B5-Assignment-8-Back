@@ -8,11 +8,19 @@ generator client {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  fullName  String
-  email     String   @unique
-  password  String
-  role      Role     @default(USER)
+  id       String @id @default(uuid())
+  email    String @unique
+  password String
+  role     Role   @default(USER)
+
+  fullName     String?
+  profileImage String?
+  bio          String?
+
+  interests        String[] @default([])
+  visitedCountries String[] @default([])
+  currentLocation  String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

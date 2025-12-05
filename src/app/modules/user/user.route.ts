@@ -1,15 +1,14 @@
-import express from "express";
+import { Router } from "express";
 import { userController } from "./user.controller";
-import { validateRequest } from "../../middlewares/validateRequest";
-import { userValidation } from "./user.validation";
+import { auth } from "../../middlewares/auth";
 
-const router = express.Router();
+const router = Router();
 
-// POST /api/users/register - Register new user
-router.post(
-  "/register",
-  validateRequest(userValidation.registerUser),
-  userController.registerUser
+router.get("/:id", userController.getSingleUser);
+router.patch(
+  "/:id",
+  auth(), // check JWT
+  userController.updateUserProfile
 );
 
 export const userRoutes = router;

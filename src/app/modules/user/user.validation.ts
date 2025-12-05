@@ -1,13 +1,10 @@
 import { z } from "zod";
 
-export const userValidation = {
-  registerUser: z.object({
-    fullName: z.string().min(3, "Full name must be at least 3 characters"),
-
-    email: z
-      // .string()
-      .email("Invalid email address"),
-
-    password: z.string().min(6, "Password must be at least 6 characters"),
-  }),
-};
+export const updateUserValidation = z.object({
+  fullName: z.string().optional(),
+  bio: z.string().optional(),
+  currentLocation: z.string().optional(),
+  profileImage: z.url().optional(),
+  interests: z.array(z.string()).optional(),
+  visitedCountries: z.array(z.string()).optional(),
+});
