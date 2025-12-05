@@ -50,8 +50,31 @@ const updateUserProfile = async (id: string, payload: any) => {
   });
 };
 
-const getAllUsers = async () => {
-  return prisma.user.findMany();
+const getAllUsers = async (loggedInUserId: string | null) => {
+  if (!loggedInUserId) {
+    // user not logged in -> return all users
+    return prisma.user.findMany({
+      select: {
+        id: true,
+        fullName: true,
+        profileImage: true,
+        currentLocation: true,
+      },
+    });
+  }
+
+  // logged in -> exclude current user
+  return prisma.user.findMany({
+    where: {
+      id: { not: loggedInUserId },
+    },
+    select: {
+      id: true,
+      fullName: true,
+      profileImage: true,
+      currentLocation: true,
+    },
+  });
 };
 
 const deleteUser = async (id: string) => {

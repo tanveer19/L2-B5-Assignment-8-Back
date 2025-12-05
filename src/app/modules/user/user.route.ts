@@ -4,11 +4,11 @@ import { auth } from "../../middlewares/auth";
 
 const router = Router();
 
+// explore route (available for both logged out & logged in)
+router.get("/", userController.getAllUsers);
+
 router.get("/:id", userController.getSingleUser);
-router.patch(
-  "/:id",
-  auth(), // check JWT
-  userController.updateUserProfile
-);
+
+router.patch("/:id", auth(), userController.updateUserProfile);
 
 export const userRoutes = router;
