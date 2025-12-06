@@ -21,11 +21,40 @@ model User {
   visitedCountries String[] @default([])
   currentLocation  String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  travelPlans TravelPlan[]
 }
 
 enum Role {
   USER
   ADMIN
+}
+
+model TravelPlan {
+  id          String     @id @default(uuid())
+  ownerId     String
+  owner       User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  destination String
+  city        String?
+  startDate   DateTime
+  endDate     DateTime
+  minBudget   Int?
+  maxBudget   Int?
+  travelType  TravelType
+  description String?
+  visibility  Visibility @default(PUBLIC)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+enum TravelType {
+  SOLO
+  FAMILY
+  FRIENDS
+}
+
+enum Visibility {
+  PUBLIC // visible to others for matchmaking
+  PRIVATE // only owner can view
 }
