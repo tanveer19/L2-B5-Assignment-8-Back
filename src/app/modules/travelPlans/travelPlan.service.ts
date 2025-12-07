@@ -24,7 +24,6 @@ export const TravelPlanService = {
   },
 
   getAllPublic: async (filters: any = {}) => {
-    // filters: destination, date range, travelType
     const where: any = { visibility: "PUBLIC" };
 
     if (filters.destination) {
@@ -41,6 +40,12 @@ export const TravelPlanService = {
         { startDate: { lte: new Date(filters.endDate) } },
         { endDate: { gte: new Date(filters.startDate) } },
       ];
+    }
+
+    if (filters.interests) {
+      // Assuming `interests` is a string array and travelPlan has description
+      // Just search description contains interest keywords
+      where.description = { contains: filters.interests, mode: "insensitive" };
     }
 
     return prisma.travelPlan.findMany({
