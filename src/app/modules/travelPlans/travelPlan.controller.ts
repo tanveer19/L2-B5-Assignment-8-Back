@@ -24,7 +24,7 @@ export const TravelPlanController = {
       sendResponse(res, {
         success: true,
         data: plans,
-        statusCode: 0,
+        statusCode: 200,
       });
     } catch (err) {
       next(err);
@@ -66,7 +66,7 @@ export const TravelPlanController = {
       sendResponse(res, {
         success: true,
         data: plan,
-        statusCode: 0,
+        statusCode: 200,
       });
     } catch (err) {
       next(err);
@@ -84,7 +84,7 @@ export const TravelPlanController = {
       sendResponse(res, {
         success: true,
         data: plan,
-        statusCode: 0,
+        statusCode: 200,
       });
     } catch (err) {
       next(err);
@@ -98,7 +98,7 @@ export const TravelPlanController = {
       sendResponse(res, {
         success: true,
         message: "Deleted",
-        statusCode: 0,
+        statusCode: 200,
       });
     } catch (err) {
       next(err);
