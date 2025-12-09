@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import AppError from "../errorHelpers/AppError";
 import httpStatus from "http-status";
-import config from "../config/env";
+import env from "../config/env";
 
 export interface AuthRequest extends Request {
   user?: {
@@ -20,7 +20,7 @@ export const auth =
         throw new AppError(httpStatus.UNAUTHORIZED, "Unauthorized Access");
       }
 
-      const decoded = jwt.verify(token, config.jwt_secret!) as {
+      const decoded = jwt.verify(token, env.jwt_secret!) as {
         id: string;
         role: string;
       };
