@@ -24,6 +24,10 @@ model User {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   travelPlans TravelPlan[]
+
+  //  Relations for reviews
+  reviewsByMe  Review[] @relation("ReviewByUser")
+  reviewsForMe Review[] @relation("ReviewForUser")
 }
 
 enum Role {
@@ -57,4 +61,19 @@ enum TravelType {
 enum Visibility {
   PUBLIC // visible to others for matchmaking
   PRIVATE // only owner can view
+}
+
+model Review {
+  id             String   @id @default(uuid())
+  reviewerId     String
+  reviewedUserId String
+  rating         Int      @db.SmallInt // 1–5
+  comment        String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  reviewer     User @relation("ReviewByUser", fields: [reviewerId], references: [id])
+  reviewedUser User @relation("ReviewForUser", fields: [reviewedUserId], references: [id])
+
+  @@unique([reviewerId, reviewedUserId])
 }
