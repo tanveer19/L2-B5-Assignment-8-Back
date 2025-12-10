@@ -34,7 +34,7 @@ export const AuthService = {
     const hashed = await bcrypt.hash(password, 10);
 
     // Ensure role is uppercase and valid
-    const roleEnum: Role = role ? role.toUpperCase() as Role : "USER";
+    const roleEnum: Role = role ? (role.toUpperCase() as Role) : "USER";
 
     // Create user
     const user = await prisma.user.create({
@@ -65,7 +65,9 @@ export const AuthService = {
     if (!user) {
       throw new AppError(404, "User not found");
     }
-
+    if (user.isBlocked) {
+      throw new Error("Your account is blocked. Contact admin.");
+    }
     // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {

@@ -11,14 +11,17 @@ export const AdminController = {
     });
   },
 
-  async deleteUser(req: Request, res: Response) {
+  // New block/unblock controller
+  async blockUnblockUser(req: Request, res: Response) {
     const { id } = req.params;
+    const { block } = req.body as { block: boolean };
 
-    await AdminService.deleteUser(id);
+    const user = await AdminService.blockUnblockUser(id, block);
 
     res.json({
       success: true,
-      message: "User deleted successfully",
+      message: `User has been ${block ? "blocked" : "unblocked"} successfully`,
+      data: user,
     });
   },
 

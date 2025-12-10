@@ -7,9 +7,10 @@ export const AdminService = {
     });
   },
 
-  async deleteUser(id: string) {
-    return prisma.user.delete({
+  async blockUnblockUser(id: string, block: boolean) {
+    return prisma.user.update({
       where: { id },
+      data: { isBlocked: block },
     });
   },
 
