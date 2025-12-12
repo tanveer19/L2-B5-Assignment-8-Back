@@ -7,14 +7,15 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 
-app.use(express.json());
-
 app.use(
   cors({
     origin: ["http://localhost:3000", "https://l2-b5-assignment-8.vercel.app"],
     credentials: true,
   })
 );
+
+app.use(express.json());
+
 app.use(cookieParser());
 
 // Register root route FIRST
