@@ -19,8 +19,8 @@ export const loginUser = catchAsync(async (req: Request, res: Response) => {
   // set cookie
   res.cookie("accessToken", result.accessToken, {
     httpOnly: true,
-    secure: false, // use true in production
-    sameSite: "lax",
+    secure: true, // use true in production
+    sameSite: "none",
   });
 
   sendResponse(res, {
