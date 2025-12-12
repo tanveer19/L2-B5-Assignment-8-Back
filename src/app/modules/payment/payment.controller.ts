@@ -1,33 +1,91 @@
-import { Request, Response } from "express";
-import { PaymentService } from "./payment.service";
+import { Response } from "express";
+import { AuthRequest } from "../../middlewares/auth";
+import { catchAsync } from "../../utils/catchAsync";
+import { sendResponse } from "../../utils/sendResponse";
+import { paymentService } from "./payment.service";
 
-export const PaymentController = {
-  async createSubscriptionSession(req: Request, res: Response) {
-    const { priceId } = req.body;
-    const userId = req.user.id;
+const createCheckoutSession = catchAsync(
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.user!.id;
+    const { plan } = req.body;
 
-    const session = await PaymentService.createCheckoutSession(
-      userId,
-      priceId,
-      `${process.env.CLIENT_URL}/payment-success`,
-      `${process.env.CLIENT_URL}/payment-cancel`
-    );
+    const result = await paymentService.createCheckoutSession(userId, plan);
 
-    res.json({ url: session.url });
-  },
+    sendResponse(res, {
+      success: true,
+      statusCode: 200,
+      message: "Checkout session created successfully",
+      data: result,
+    });
+  }
+);
 
-  async createOneTimeSession(req: Request, res: Response) {
-    const { amount } = req.body;
-    const userId = req.user.id;
+const verifySession = catchAsync(async (req: AuthRequest, res: Response) => {
+  const { session_id } = req.query;
+  const result = await paymentService.verifySession(session_id as string);
 
-    const session = await PaymentService.createOneTimePayment(
-      userId,
-      amount,
-      "usd",
-      `${process.env.CLIENT_URL}/payment-success`,
-      `${process.env.CLIENT_URL}/payment-cancel`
-    );
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Session verified successfully",
+    data: result,
+  });
+});
 
-    res.json({ url: session.url });
-  },
+const handleWebhook = catchAsync(async (req: any, res: Response) => {
+  const signature = req.headers["stripe-signature"];
+  await paymentService.handleWebhook(req.body, signature);
+
+  res.json({ received: true });
+});
+
+const getMySubscription = catchAsync(
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.user!.id;
+    const result = await paymentService.getMySubscription(userId);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: 200,
+      message: "Subscription retrieved successfully",
+      data: result,
+    });
+  }
+);
+
+const getPaymentHistory = catchAsync(
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.user!.id;
+    const result = await paymentService.getPaymentHistory(userId);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: 200,
+      message: "Payment history retrieved successfully",
+      data: result,
+    });
+  }
+);
+
+const cancelSubscription = catchAsync(
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.user!.id;
+    const result = await paymentService.cancelSubscription(userId);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: 200,
+      message: "Subscription cancelled successfully",
+      data: result,
+    });
+  }
+);
+
+export const paymentController = {
+  createCheckoutSession,
+  verifySession,
+  handleWebhook,
+  getMySubscription,
+  getPaymentHistory,
+  cancelSubscription,
 };
