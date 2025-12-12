@@ -30,6 +30,79 @@ model User {
   //  Relations for reviews
   reviewsByMe  Review[] @relation("ReviewByUser")
   reviewsForMe Review[] @relation("ReviewForUser")
+
+  // Subscription fields
+  isSubscribed     Boolean          @default(false)
+  subscriptionPlan SubscriptionPlan @default(FREE)
+  subscriptionEnd  DateTime?
+  isVerified       Boolean          @default(false)
+  stripeCustomerId String?          @unique
+
+  payments      Payment[]
+  subscriptions Subscription[]
+}
+
+enum SubscriptionPlan {
+  FREE
+  MONTHLY
+  YEARLY
+}
+
+model Subscription {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  plan      SubscriptionPlan
+  status    SubscriptionStatus
+  startDate DateTime
+  endDate   DateTime
+
+  stripeSubscriptionId String? @unique
+  stripePriceId        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  PAST_DUE
+}
+
+model Payment {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  amount   Float
+  currency String        @default("usd")
+  status   PaymentStatus
+
+  stripePaymentId String? @unique
+  stripeSessionId String? @unique
+
+  plan SubscriptionPlan
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
 }
 
 enum Role {

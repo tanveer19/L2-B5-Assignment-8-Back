@@ -20,7 +20,7 @@ export const auth =
         throw new AppError(httpStatus.UNAUTHORIZED, "Unauthorized Access");
       }
 
-      const decoded = jwt.verify(token, env.jwt_secret!) as {
+      const decoded = jwt.verify(token, env.JWT_SECRET!) as {
         id: string;
         role: string;
       };
