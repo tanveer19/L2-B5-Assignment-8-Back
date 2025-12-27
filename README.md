@@ -1,6 +1,6 @@
 Github repo: https://github.com/tanveer19/L2-B5-Assignment-8-Back
 
-Live link: https://l2-b5-assignment-8-back.onrender.com/
+Live link: https://l2-b5-assignment-8-back.vercel.app/
 
 # ✅ **Backend README.md (Express + Prisma + PostgreSQL + Stripe)**
 
